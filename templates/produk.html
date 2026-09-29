@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Produk Kantin</h2>
+<table id="tbl"><thead><tr><th>Nama</th><th>Harga</th><th>Ubah Harga</th></tr></thead><tbody></tbody></table>
+<h3>Tambah Produk</h3>
+<form id="f">
+  <input name="nama" placeholder="Nama produk" required>
+  <input name="harga" type="number" min="0" placeholder="Harga" required>
+  <button>Simpan</button>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+async function load() {
+  const p = await api("/api/produk");
+  el("tbl").querySelector("tbody").innerHTML = p.map(x =>
+    `<tr><td>${x.nama}</td><td>${rupiah(x.harga)}</td>
+     <td><input type="number" min="0" value="${x.harga}" id="h${x.id}" style="width:100px">
+     <button onclick="setHarga(${x.id})">Ubah</button></td></tr>`).join("");
+}
+el("f").onsubmit = async e => {
+  e.preventDefault();
+  const d = Object.fromEntries(new FormData(e.target));
+  d.harga = +d.harga;
+  await post("/api/produk", d); e.target.reset(); load();
+};
+async function setHarga(id) {
+  const r = await fetch(`/api/produk/${id}`, {method: "PUT", headers: {"Content-Type": "application/json"}, body: JSON.stringify({harga: +el("h" + id).value})});
+  if (r.ok) load(); else alert((await r.json()).error);
+}
+load();
+</script>
+{% endblock %}

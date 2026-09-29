@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Siswa</h2>
+<table id="tbl"><thead><tr><th>Kartu</th><th>Nama</th><th>Kelas</th><th>Saldo</th><th>Batas Harian</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+<h3>Tambah Siswa</h3>
+<form id="f">
+  <input name="nama" placeholder="Nama" required>
+  <input name="kelas" placeholder="Kelas" required>
+  <input name="batas_harian" type="number" min="0" value="50000" placeholder="Batas harian">
+  <button>Simpan</button>
+</form>
+<h3>Topup Saldo</h3>
+<form id="t">
+  <select name="siswa_id" id="sel" required></select>
+  <input name="jumlah" type="number" min="1" placeholder="Jumlah" required>
+  <input name="metode" placeholder="Metode (tunai/transfer)">
+  <button>Topup</button>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+async function load() {
+  const s = await api("/api/siswa");
+  el("sel").innerHTML = s.map(x => `<option value="${x.id}">${x.nama} (${x.kartu_id})</option>`).join("");
+  el("tbl").querySelector("tbody").innerHTML = s.map(x =>
+    `<tr><td><b>${x.kartu_id}</b></td><td>${x.nama}</td><td>${x.kelas}</td>
+     <td>${rupiah(x.saldo)}</td>
+     <td><input type="number" min="0" value="${x.batas_harian}" id="b${x.id}" style="width:110px"></td>
+     <td><button onclick="setBatas(${x.id})">Ubah Batas</button></td></tr>`).join("");
+}
+el("f").onsubmit = async e => {
+  e.preventDefault();
+  const d = Object.fromEntries(new FormData(e.target));
+  const r = await post("/api/siswa", d);
+  if (!r.error) { alert("Kartu baru: " + r.kartu_id); e.target.reset(); load(); }
+};
+el("t").onsubmit = async e => {
+  e.preventDefault();
+  const d = Object.fromEntries(new FormData(e.target));
+  d.siswa_id = +d.siswa_id; d.jumlah = +d.jumlah;
+  const r = await post("/api/topup", d);
+  if (!r.error) { alert("Topup berhasil. Saldo: " + rupiah(r.siswa.saldo)); load(); }
+};
+async function setBatas(id) {
+  const r = await fetch(`/api/siswa/${id}`, {method: "PATCH", headers: {"Content-Type": "application/json"}, body: JSON.stringify({batas_harian: +el("b" + id).value})});
+  if (r.ok) { alert("Batas harian diubah"); load(); } else alert((await r.json()).error);
+}
+load();
+</script>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Riwayat Pembelian (Pantauan Ortu)</h2>
+<p><select id="sel"></select> <input id="tanggal" type="date"></p>
+<div id="info"></div>
+<div id="list"></div>
+<h3>Belanja Harian Semua Siswa</h3>
+<table id="tbl"><thead><tr><th>Nama</th><th>Kelas</th><th>Total Belanja</th><th>Batas</th></tr></thead><tbody></tbody></table>
+{% endblock %}
+{% block scripts %}
+<script>
+async function loadSiswa() {
+  const s = await api("/api/siswa");
+  el("sel").innerHTML = s.map(x => `<option value="${x.id}">${x.nama} (${x.kelas})</option>`).join("");
+}
+async function show() {
+  const id = el("sel").value;
+  const d = await api(`/api/siswa/${id}/riwayat`);
+  el("info").innerHTML = `<div class="card"><b>${d.siswa.nama}</b> · Saldo ${rupiah(d.siswa.saldo)} · Belanja hari ini ${rupiah(d.belanja_hari_ini)} / batas ${rupiah(d.siswa.batas_harian)}</div>`;
+  el("list").innerHTML = d.riwayat.map(b => `
+    <div class="card"><b>${b.tanggal}</b> · ${rupiah(b.total)}
+    <ul>${b.items.map(i => `<li>${i.nama_produk} × ${i.qty} @ ${rupiah(i.harga_satuan)}</li>`).join("")}</ul></div>`).join("") || "<p>Belum ada pembelian.</p>";
+}
+async function ringkas() {
+  const t = el("tanggal").value;
+  const r = await api("/api/ringkasan-harian" + (t ? "?tanggal=" + t : ""));
+  el("tbl").querySelector("tbody").innerHTML = r.map(x =>
+    `<tr><td>${x.nama}</td><td>${x.kelas}</td><td>${rupiah(x.total_belanja)}</td><td>${rupiah(x.batas_harian)}</td></tr>`).join("");
+}
+el("sel").onchange = show;
+el("tanggal").onchange = ringkas;
+(async () => { await loadSiswa(); await show(); await ringkas(); })();
+</script>
+{% endblock %}
