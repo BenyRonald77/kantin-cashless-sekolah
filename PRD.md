@@ -13,8 +13,8 @@ saja yang dibeli anak.
 
 ## Stack
 
-- Backend: Python + Flask, SQLite (stdlib `sqlite3`)
-- Frontend: HTML + vanilla JS + CSS murni
+- Backend: Next.js 14 (App Router) + TypeScript, Prisma 5 + SQLite
+- Frontend: React 18 + Tailwind CSS
 
 ## Model Data
 
@@ -38,7 +38,7 @@ saja yang dibeli anak.
 
 ## Tahap Pengerjaan
 
-- **F0 — Fondasi**: PRD, README, struktur, requirements, .gitignore.
+- **F0 — Fondasi**: PRD, README, struktur, package.json, .gitignore.
 - **F1 — Database + API inti**: schema, seed, CRUD siswa & produk, topup,
   pembelian via kartu_id dengan validasi saldo & batas harian.
 - **F2 — Pantau ortu**: riwayat pembelian per siswa, ringkasan belanja
@@ -47,10 +47,10 @@ saja yang dibeli anak.
 
 ## Kriteria Selesai
 
-- [ ] Bayar dengan saldo kurang ditolak; melewati batas harian ditolak
-- [ ] Topup menambah saldo; batas harian bisa diubah ortu
-- [ ] Riwayat pembelian per siswa tampil lengkap dengan item
-- [ ] `pip install -r requirements.txt && python app.py` langsung jalan
+- [x] Bayar dengan saldo kurang ditolak; melewati batas harian ditolak
+- [x] Topup menambah saldo; batas harian bisa diubah ortu
+- [x] Riwayat pembelian per siswa tampil lengkap dengan item
+- [x] `npm install && npx prisma generate && npx prisma db push && npm run seed && npm run dev` langsung jalan
 
 ## Non-tujuan
 

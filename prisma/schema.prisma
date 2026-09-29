@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Siswa {
+  id          Int    @id @default(autoincrement())
+  nama        String
+  kelas       String
+  kartuId     String @unique @map("kartu_id")
+  saldo       Int    @default(0) @map("saldo")
+  batasHarian Int    @default(50000) @map("batas_harian")
+
+  topups    Topup[]
+  pembelian Pembelian[]
+
+  @@map("siswa")
+}
+
+model Produk {
+  id    Int    @id @default(autoincrement())
+  nama  String
+  harga Int
+
+  items PembelianItem[]
+
+  @@map("produk")
+}
+
+model Topup {
+  id      Int    @id @default(autoincrement())
+  siswaId Int    @map("siswa_id")
+  tanggal String
+  jumlah  Int
+  metode  String?
+
+  siswa Siswa @relation(fields: [siswaId], references: [id])
+
+  @@map("topup")
+}
+
+model Pembelian {
+  id      Int    @id @default(autoincrement())
+  siswaId Int    @map("siswa_id")
+  tanggal String
+  total   Int
+
+  siswa Siswa           @relation(fields: [siswaId], references: [id])
+  items PembelianItem[]
+
+  @@map("pembelian")
+}
+
+model PembelianItem {
+  id          Int @id @default(autoincrement())
+  pembelianId Int @map("pembelian_id")
+  produkId    Int @map("produk_id")
+  qty         Int
+  hargaSatuan Int @map("harga_satuan")
+
+  pembelian Pembelian @relation(fields: [pembelianId], references: [id])
+  produk    Produk    @relation(fields: [produkId], references: [id])
+
+  @@map("pembelian_item")
+}
